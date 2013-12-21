@@ -1,4 +1,5 @@
 import os
+import ConfigParser as configparser
 from flask import Flask
 from flask_mwoauth import MWOAuth
 
@@ -12,16 +13,26 @@ server. Your redirect back will therefore fail -- please adapt the URL in
 your address bar to http://localhost:5000/oauth-callback?oauth_verifier=...etc
 """
 
-consumer_key = raw_input('Consumer key: ')
-consumer_secret = raw_input('Consumer secret: ')
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+CONFIG_FILENAME = 'keys.cfg'
+CONFIG_FILE = os.path.realpath(
+    os.path.join('..', '..', 'wtosm', 'keys.cfg'))
+
+config = configparser.ConfigParser()
+config.read(CONFIG_FILE)
+
+consumer_key = config.get('keys', 'consumer_key')
+consumer_secret = config.get('keys', 'consumer_secret')
 
 mwoauth = MWOAuth(consumer_key=consumer_key, consumer_secret=consumer_secret)
 app.register_blueprint(mwoauth.bp)
 
+
 @app.route("/")
 def gcu():
-    return "logged in as: " + repr(mwoauth.get_current_user(False)) + "<br>" + \
+    username = repr(mwoauth.get_current_user(False))
+    return "logged in as: " + username + "<br>" + \
            "<a href=login>login</a> / <a href=logout>logout</a>"
 
-if __name__=="__main__":
+if __name__ == "__main__":
     app.run(debug=True)
