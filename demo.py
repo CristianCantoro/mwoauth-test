@@ -29,10 +29,32 @@ app.register_blueprint(mwoauth.bp)
 
 
 @app.route("/")
-def gcu():
+def index():
     username = repr(mwoauth.get_current_user(False))
     return "logged in as: " + username + "<br>" + \
            "<a href=login>login</a> / <a href=logout>logout</a>"
+
+
+@app.route("/test")
+def insert():
+
+    token_req = mwoauth.request({'action': 'query',
+                                 'titles': 'Project:Sandbox',
+                                 'prop': 'info',
+                                 'intoken': 'edit'
+                                 })
+
+    pageid = token_req['query']['pages'].keys()[0]
+
+    token = token_req['query']['pages'][pageid]['edittoken']
+
+    test = mwoauth.request({'action': 'edit',
+                            'title': 'Project:Sandbox',
+                            'summary': 'test summary',
+                            'text': 'article content',
+                            'token': token})
+
+    return "Done!"
 
 if __name__ == "__main__":
     app.run(debug=True)
